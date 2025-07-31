@@ -1,0 +1,156 @@
+# Pygameライブラリのインポート
+import pygame  # ゲーム用ライブラリ
+
+# OSパス操作用
+import os  # ファイルパス結合などに使用
+
+# ゲーム画面のサイズ（左上x, 左上y, 幅, 高さ）
+SCREEN = pygame.Rect((0, 0, 640, 480))  # 画面サイズを矩形で定義
+
+
+
+def load_image(fname, size=None):
+    """
+    画像ファイルを読み込んでSurfaceオブジェクトとして返す関数。
+    Args:
+        fname: ファイル名（pictureフォルダ内）
+        size: 指定時はそのサイズにリサイズ
+    Returns:
+        pygame.Surface: 読み込んだ画像（必要に応じてリサイズ済み）
+    """
+    picture_path = os.path.join("picture", fname)  # pictureフォルダ内のパスを作成
+    tmp = pygame.image.load(
+        picture_path
+    ).convert_alpha()  # 画像をアルファ付きで読み込み
+    return (
+        tmp if size is None else pygame.transform.scale(tmp, size)
+    )  # リサイズ有無で返す
+
+
+def load_sound(sound):
+    """
+    サウンドファイルを読み込んでSoundオブジェクトとして返す関数。
+    Args:
+        sound: ファイル名（musicフォルダ内）
+    Returns:
+        pygame.mixer.Sound: 読み込んだサウンド
+    """
+    sound_path = os.path.join("music", sound)  # musicディレクトリとファイル名を結合
+    return pygame.mixer.Sound(sound_path)  # サウンドファイルを読み込んで返す
+
+
+
+class Counter:
+    """
+    汎用カウンタクラス。
+    ・値の加減算、リセット、最大値制御などを提供。
+    ・スコアやビーム発射数など様々な用途で利用。
+    """
+
+    def __init__(self, initval, maxval=None):
+        self.init_val = initval  # カウンタの初期値
+        self._val = initval  # 現在値
+        if maxval:  # 最大値が指定されていれば
+            self._maxval = maxval  # 最大値をセット
+
+    @property
+    def val(self):
+        # 現在値を取得
+        return self._val
+
+    @val.setter
+    def val(self, val):
+        # 現在値をセット（0未満は0に補正）
+        self._val = val if val >= 0 else 0
+
+    def reset(self):
+        # カウンタを初期値にリセット
+        self._val = self.init_val
+
+    @property
+    def maxval(self):
+        # 最大値を取得
+        return self._maxval
+
+
+class Score(Counter, pygame.sprite.Sprite):
+    """
+    スコアやライフなどの数値を画面に表示するスプライトクラス。
+    Counter（値管理）とpygame.sprite.Sprite（描画）を多重継承。
+    数字やパターン（●○など）で表示可能。
+    """
+
+
+    FONT_SIZE = 28  # フォントサイズ
+    BLUE = (0, 0, 255)  # 青色（デフォルト）
+    RED = (255, 0, 0)  # 赤色
+
+    def __init__(
+        self,
+        initval=0,  # 初期値
+        maxval=None,  # 最大値
+        pos=(0, 0),  # 表示位置
+        color=BLUE,  # 色指定
+        font=None,  # フォント指定（既定値：システム）
+        form="#",  # 表示形式指定
+        pat=None,  # 表示パターン（pat="●○"のように指定）
+    ):
+        Counter.__init__(self, initval, maxval)  # Counterの初期化
+        pygame.sprite.Sprite.__init__(self, self.containers)  # Spriteの初期化
+        if font is None:  # フォント指定がなければシステムデフォルト
+            self.font = pygame.font.SysFont(None, Score.FONT_SIZE)
+        else:  # 指定があればfontディレクトリから読み込む
+            font_path = os.path.join("font", font)
+            self.font = pygame.font.Font(font_path, 20)
+        self.color = color  # 表示色
+        self.pos = pos  # 表示位置
+        self.pat = pat  # パターン表示用（例: "●○"）
+        # 表示形式の設定
+        if self.pat:  # パターン表示の場合
+            self.form = form.replace("#", "{}")  # #を{}に置換
+            text_img = self.form.format(self.pat[0] * self._val)  # ●の数だけ表示
+        else:  # 数値表示の場合
+            self.form = form.replace("#", "{:0>5d}")  # #をゼロ埋め5桁に置換
+            text_img = self.form.format(self._val)  # 数値を表示
+        self.image = self.font.render(text_img, False, self.color)  # テキスト画像生成
+        self.rect = self.image.get_rect().move(self.pos)  # 画像の位置をセット
+
+    def update(self):
+        # スコアやライフの値が変化したときに呼ばれる
+        # パターン表示（例: ●○）の場合
+        if self.pat:
+            text_img = self.form.format(
+                self.pat[0] * self._val + self.pat[1] * (self._maxval - self._val)
+            )  # ●の数と○の数を合成
+        else:  # 数値表示の場合
+            text_img = self.form.format(self._val)
+        self.image = self.font.render(text_img, False, self.color)  # テキスト画像を再生成
+        self.rect = self.image.get_rect().move(self.pos)  # 画像の位置も再設定
+
+
+
+class HiScore(Score):
+    """
+    ハイスコア表示用クラス。
+    ・Scoreを継承し、現在のスコアと比較して最大値を表示。
+    Args:
+        score_obj: 比較対象のScoreインスタンス
+        pos: 表示位置
+        form: 表示形式
+    """
+
+    def __init__(
+        self,
+        score_obj,  # スコアオブジェクト
+        pos=(0, 0),  # 表示位置
+        form="#",  # 表示形式指定
+    ):
+        # 比較対象のScoreインスタンスを保持
+        self.score_obj = score_obj
+        # Scoreの初期化（pos, formのみ指定）
+        Score.__init__(self, pos=pos, form=form)
+
+    def update(self):
+        # スコアが更新されたとき、最大値を保持
+        self._val = max(self._val, self.score_obj.val)  # 現在値と比較して大きい方を保持
+        Score.update(self)  # 表示を更新
