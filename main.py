@@ -10,13 +10,11 @@ SCREEN = Rect((0, 0, 640, 480))
 
 
 def load_image(fname, size=None):
-    # picture_path = os.path.join("picture", fname)
     tmp = pygame.image.load(f"picture/{fname}").convert_alpha()
-    return tmp if size == None else pygame.transform.scale(tmp, size)
+    return tmp if size is None else pygame.transform.scale(tmp, size)  # 画像サイズ変更
 
 
 def load_sound(sound):
-    # sound_path = os.path.join("music", sound)
     return pygame.mixer.Sound(f"music/{sound}")
 
 
@@ -31,7 +29,7 @@ class Background:
         self.sky_image = load_image("bg_natural_sky.jpg", SCREEN.size)
         self.mount_image = load_image("bg_natural_mount_800x800.png")
         self.mount_rect = self.mount_image.get_rect()
-        self.ground_image = pygame.Surface((SCREEN.width, 20))
+        self.ground_image = pygame.Surface((SCREEN.width, 20))  # 地面の画像作成
         self.ground_image.fill((0, 128, 64))
         self.ground_rect = self.ground_image.get_rect()
         self.ground_rect.bottom = SCREEN.bottom
@@ -44,9 +42,9 @@ class Background:
         )
 
     def draw(self, screen):
-        screen.blit(self.sky_image, SCREEN)
-        screen.blit(self.mount_image, (-self.mount_image_x, -118))
-        screen.blit(self.ground_image, self.ground_rect)
+        screen.blit(self.sky_image, SCREEN)  # 空の画像を画面に描画
+        screen.blit(self.mount_image, (-self.mount_image_x, -118))  # 山の画像を画面に描画
+        screen.blit(self.ground_image, self.ground_rect)  # 地面の画像を画面に描画
 
 
 class Majo(pygame.sprite.Sprite):
@@ -65,13 +63,14 @@ class Majo(pygame.sprite.Sprite):
         self.images = load_image("majo.png")
         self.image_dir = Majo.LEFT
         self.image_off = 0
-        self.image = self.images.subsurface((0, 0, Majo.IMAGE_WIDTH, Majo.IMAGE_HEIGHT))
+        self.image = self.images.subsurface(
+            (0, 0, Majo.IMAGE_WIDTH, Majo.IMAGE_HEIGHT))
         self.rect = Rect((0, 0, Majo.IMAGE_WIDTH, Majo.IMAGE_HEIGHT))
         self.rect.centerx = SCREEN.centerx
         self.rect.bottom = SCREEN.bottom - 20
 
     def move_left(self):
-        self.rect.move_ip(-Majo.SPEED, 0)
+        self.rect.move_ip(-Majo.SPEED, 0)  # 左に移動
         self.image_dir = Majo.LEFT
         self.move()
 
@@ -81,7 +80,7 @@ class Majo(pygame.sprite.Sprite):
         self.move()
 
     def move(self):
-        self.rect.clamp_ip(SCREEN)
+        self.rect.clamp_ip(SCREEN)  # 画面の範囲内に収める
         self.image_off = (self.image_off + 1) % Majo.IMAGE_NUMS
         self.image = self.images.subsurface(
             (
@@ -151,7 +150,7 @@ class Ufo(pygame.sprite.Sprite):
         self.rect.move_ip(self.speed, 0)
         if self.rect.left <= SCREEN.left or self.rect.right >= SCREEN.right:
             self.speed = -self.speed  # 方向転換
-        self.rect.clamp_ip(SCREEN)
+        self.rect.clamp_ip(SCREEN)  # 画面の範囲内に収める
         self.dir = Ufo.LEFT if self.speed > 0 else Ufo.RIGHT
         self.image = Ufo.images.subsurface(
             self.dir * Ufo.IMAGE_WIDTH, 0, Ufo.IMAGE_WIDTH, Ufo.IMAGE_HEIGHT
@@ -454,13 +453,13 @@ async def main():
     """初期設定"""
     # 画面の初期設定
     pygame.init()
-    screen = pygame.display.set_mode(SCREEN.size)
+    screen = pygame.display.set_mode(SCREEN.size)  # 物理的な画面サイズ
     pygame.display.set_caption("Animation")
 
     INIT, PLAY, CLEAR, GAMEOVER = 1, 2, 3, 4
     game_status = INIT
 
-    # 時間管理
+    # 時間管理するオブジェクト(描画スピードの調整用)
     clock = pygame.time.Clock()
 
     """Sprite登録"""
@@ -514,13 +513,13 @@ async def main():
     Beam.counter = Counter(initval=0, maxval=2)
 
     majo = Majo()
-    bg_img = Background(majo)
+    bg_img = Background(majo)  # 背景クラスからオブジェクト作成
     # ufo = Ufo()
 
     while True:
 
         """画面(screen)をクリア"""
-        screen.fill((255, 255, 255))  # 白
+        screen.fill((0, 0, 0))  # 黒色で画面をクリア
 
         """ゲームに登場する人/物/背景の位置Update"""
         bg_img.update()
@@ -535,7 +534,7 @@ async def main():
         group.draw(screen)
 
         if game_status != PLAY:
-            screen.blit(title_msg[game_status], (100, 150))
+            screen.blit(title_msg[game_status], (100, 150))  # タイトルメッセージを画面に表示
 
         """画面(screen)の実表示"""
         pygame.display.update()
@@ -554,9 +553,9 @@ async def main():
 
         """イベント処理"""
         for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
+            if event.type == QUIT:  # ウィンドウの×ボタンが押されたとき
+                pygame.quit()  # pygameを終了
+                sys.exit()  # プログラムを終了
             elif event.type == KEYDOWN:
                 if event.key == K_SPACE and game_status == PLAY:
                     # if Beam.counter < 2:
@@ -594,16 +593,21 @@ async def main():
                     Majo.score.reset()
                     Majo.stage.reset()
 
-        pressed_keys = pygame.key.get_pressed()
+        pressed_keys = pygame.key.get_pressed()  # 押されているキーを取得
         # 押されているキーに応じて画像を移動
-        if pressed_keys[K_LEFT]:
+        if pressed_keys[K_LEFT]:  # 左矢印キーが押されたとき
             majo.move_left()
-        elif pressed_keys[K_RIGHT]:
+        elif pressed_keys[K_RIGHT]:  # 右矢印キーが押されたとき
             majo.move_right()
+        # elif pressed_keys[K_UP]:  # 上矢印キーが押されたとき
+        #     majo.rect.move_ip(0, -5)
+        # elif pressed_keys[K_DOWN]:  # 下矢印キーが押されたとき
+        #     majo.rect.move_ip(0, 5)
 
         """描画スピードの調整（FPS)"""
         clock.tick(60)
         await asyncio.sleep(0)
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
