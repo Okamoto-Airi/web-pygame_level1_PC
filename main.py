@@ -107,6 +107,11 @@ async def main():
     # 時間管理用クロックの作成
     clock = pygame.time.Clock()  # FPS制御用
 
+    # 制限時間
+    TIME_LIMIT = 60  # 制限時間（秒）
+    time_left = TIME_LIMIT  # 残り時間
+    font = pygame.font.SysFont(None, 48)  # 残り時間表示用フォント
+
     # Spriteグループの登録
     group = pygame.sprite.RenderUpdates()  # 描画更新用グループ
     bomb_g = pygame.sprite.Group()  # 爆弾グループ
@@ -164,6 +169,8 @@ async def main():
     bg_img = Background(majo)  # 背景生成（魔女の参照渡し）
     ufo = None  # UFOはゲーム開始時に生成するため、初期値はNone
 
+    start_ticks = pygame.time.get_ticks()  # ゲーム開始時の時刻（ミリ秒）
+
     while True:
         # 画面を白でクリア
         screen.fill((255, 255, 255))  # 背景色を白に設定
@@ -179,6 +186,20 @@ async def main():
         # 背景・スプライトを画面に描画
         bg_img.draw(screen)  # 背景描画
         group.draw(screen)  # スプライト描画
+
+        # 制限時間の計算と表示
+        if game_status == PLAY:
+            elapsed_sec = (pygame.time.get_ticks() - start_ticks) // 1000  # 経過秒数
+            time_left = max(0, TIME_LIMIT - elapsed_sec)  # 残り時間
+            # 残り時間を画面右上に表示
+            timer_img = font.render(f"TIME: {time_left}", True, (0, 0, 0))
+            screen.blit(timer_img, (SCREEN.right - 150, 60))
+
+            # 時間切れでゲームオーバー
+            if time_left == 0:
+                game_status = GAMEOVER
+                play_sound.stop()
+                opening_sound.play(-1)
 
         # タイトル・クリア・ゲームオーバー時はメッセージ画像を表示
         if game_status != PLAY:
@@ -215,6 +236,7 @@ async def main():
                     ufo = Ufo()  # UFO生成
                     opening_sound.stop()  # タイトルBGM停止
                     play_sound.play(-1)  # プレイBGM再生
+                    start_ticks = pygame.time.get_ticks()  # タイマーリセット
                 # クリア画面でCキーで次ステージ
                 elif event.key == K_c and game_status == CLEAR:
                     game_status = PLAY  # プレイ状態へ
@@ -224,6 +246,7 @@ async def main():
                     Majo.stage.val += 1  # ステージ数加算
                     opening_sound.stop()  # タイトルBGM停止
                     play_sound.play(-1)  # プレイBGM再生
+                    start_ticks = pygame.time.get_ticks()  # タイマーリセット
                 # ゲームオーバー画面でRキーでリトライ
                 elif event.key == K_r and game_status == GAMEOVER:
                     game_status = PLAY  # プレイ状態へ
@@ -238,6 +261,7 @@ async def main():
                     bg_img = Background(majo)  # 背景再生成
                     Majo.score.reset()  # スコアリセット
                     Majo.stage.reset()  # ステージリセット
+                    start_ticks = pygame.time.get_ticks()  # タイマーリセット
 
         # キー入力による魔女の移動処理
         pressed_keys = pygame.key.get_pressed()  # 押されているキー取得
