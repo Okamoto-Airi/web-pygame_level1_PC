@@ -73,8 +73,8 @@ class Majo(pygame.sprite.Sprite):
     SPEED = 5  # 移動速度（ピクセル/フレーム）
     IMAGE_NUMS = 3  # アニメーションコマ数
     MINUS_LIFE = 1  # 爆弾被弾時のライフ減少量
-    UFO_POINT = 10  # UFO撃破時の加点
-    BOMB_POINT = 1  # 爆弾撃破時の加点
+    # UFO_POINT = 10  # UFO撃破時の加点
+    # BOMB_POINT = 1  # 爆弾撃破時の加点
 
     def __init__(self):
         # スプライトの初期化（所属グループに登録）
@@ -170,7 +170,8 @@ class Ufo(pygame.sprite.Sprite):
     SPEED = 5
     LEFT, RIGHT = 0, 1
     BOMB_PROB = 0.01
-    MINUS_POINT = 5
+    MINUS_POINT = 5  # UFO撃破時の減点
+    MAX_HP = 30  # UFOの最大HP
     # 爆発アニメ
     EXP_IMAGE_WIDTH, EXP_IMAGE_HEIGHT = 320, 120
     EXP_IMAGE_OFFSET = 8
@@ -188,6 +189,7 @@ class Ufo(pygame.sprite.Sprite):
         self.rect.midtop = Ufo.START  # 初期位置（画面上部）
         self.speed = Ufo.SPEED  # 移動速度
         self.dir = Ufo.LEFT  # 初期向き
+        self.hp = Ufo.MAX_HP  # 初期HP（最大値）
 
     def update(self):
         # 毎フレーム左右に移動
@@ -206,14 +208,15 @@ class Ufo(pygame.sprite.Sprite):
 
         # 一定確率で爆弾を投下（BOMB_PROBで制御）
         if random.random() < Ufo.BOMB_PROB:
-            # ステージが進むと爆弾の横方向速度もランダムで増加
-            dx = (
-                0 if Majo.stage.val <= 2 else (random.random() * 2.0 - 1.0) * self.speed
-            )
+            # # ステージが進むと爆弾の横方向速度もランダムで増加
+            # dx = (
+            #     0 if Majo.stage.val <= 2 else (random.random() * 2.0 - 1.0) * self.speed
+            # )
+            dx = 0  # 横方向の移動量（ステージ1は固定）
             Bomb(self, dx)  # 爆弾生成
 
         # UFOの爆破シーン（スコア0で爆発アニメ＆消滅）
-        if Ufo.score.val == 0:
+        if self.hp == 0:
             Explosion(
                 Ufo.exp_images,
                 self.rect.center,

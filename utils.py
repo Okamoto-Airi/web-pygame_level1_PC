@@ -8,6 +8,47 @@ import os  # ファイルパス結合などに使用
 SCREEN = pygame.Rect((0, 0, 640, 480))  # 画面サイズを矩形で定義
 
 
+def draw_hp_bar(screen, ufo, pos=(100, 50), size=(200, 20), font=None):
+    """
+    敵のHPゲージを描画（文字付き）
+    :param screen: 描画先
+    :param ufo: HP情報を持つ敵（例：Ufoクラスのインスタンス）
+    :param pos: 描画位置 (x, y)
+    :param size: バーサイズ (width, height)
+    :param font: pygame.font.Font オブジェクト（省略時は自動生成）
+    """
+    x, y = pos
+    w, h = size
+
+    # 背景（灰色）
+    pygame.draw.rect(screen, (180, 180, 180), (x, y, w, h))
+
+    # # HP比率に応じたバー（赤→緑）
+    # hp_ratio = max(0, ufo.hp / ufo.MAX_HP)
+    # bar_color = (255 * (1 - hp_ratio), 255 * hp_ratio, 0)
+    # pygame.draw.rect(screen, bar_color, (x, y, int(w * hp_ratio), h))
+
+    # HP比率に応じた色（段階的）
+    hp_ratio = max(0, ufo.hp / ufo.MAX_HP)
+    if hp_ratio > 0.5:
+        bar_color = (0, 255, 0)        # 緑
+    elif hp_ratio > 0.2:
+        bar_color = (240, 240, 0)      # 黄
+    else:
+        bar_color = (255, 0, 0)        # 赤
+    pygame.draw.rect(screen, bar_color, (x, y, int(w * hp_ratio), h))
+
+    # 枠線（黒）
+    pygame.draw.rect(screen, (0, 0, 0), (x, y, w, h), 2)
+
+    # HP数値の文字（中央に描画）
+    if font is None:
+        font = pygame.font.SysFont(None, 20)
+    hp_text = font.render(f"UFO HP: {ufo.hp}/{ufo.MAX_HP}", True, (0, 0, 0))
+    text_rect = hp_text.get_rect(center=(x + w // 2, y + h // 2))
+    screen.blit(hp_text, text_rect)
+
+
 def calculate_score_and_rank(time_left, life_val, font):
     """
     残り時間とライフからスコアとランクを計算し、スコア画像・ランク画像を返す。
@@ -155,28 +196,28 @@ class Score(Counter, pygame.sprite.Sprite):
 
 
 
-class HiScore(Score):
-    """
-    ハイスコア表示用クラス。
-    ・Scoreを継承し、現在のスコアと比較して最大値を表示。
-    Args:
-        score_obj: 比較対象のScoreインスタンス
-        pos: 表示位置
-        form: 表示形式
-    """
+# class HiScore(Score):
+#     """
+#     ハイスコア表示用クラス。
+#     ・Scoreを継承し、現在のスコアと比較して最大値を表示。
+#     Args:
+#         score_obj: 比較対象のScoreインスタンス
+#         pos: 表示位置
+#         form: 表示形式
+#     """
 
-    def __init__(
-        self,
-        score_obj,  # スコアオブジェクト
-        pos=(0, 0),  # 表示位置
-        form="#",  # 表示形式指定
-    ):
-        # 比較対象のScoreインスタンスを保持
-        self.score_obj = score_obj
-        # Scoreの初期化（pos, formのみ指定）
-        Score.__init__(self, pos=pos, form=form)
+#     def __init__(
+#         self,
+#         score_obj,  # スコアオブジェクト
+#         pos=(0, 0),  # 表示位置
+#         form="#",  # 表示形式指定
+#     ):
+#         # 比較対象のScoreインスタンスを保持
+#         self.score_obj = score_obj
+#         # Scoreの初期化（pos, formのみ指定）
+#         Score.__init__(self, pos=pos, form=form)
 
-    def update(self):
-        # スコアが更新されたとき、最大値を保持
-        self._val = max(self._val, self.score_obj.val)  # 現在値と比較して大きい方を保持
-        Score.update(self)  # 表示を更新
+#     def update(self):
+#         # スコアが更新されたとき、最大値を保持
+#         self._val = max(self._val, self.score_obj.val)  # 現在値と比較して大きい方を保持
+#         Score.update(self)  # 表示を更新

@@ -14,7 +14,7 @@ import asyncio
 from sprites import Background, Majo, Ufo, Beam, Bomb, Explosion, Point
 
 # ユーティリティ関数・定数のインポート
-from utils import load_image, load_sound, SCREEN, Score, HiScore, Counter, calculate_score_and_rank
+from utils import load_image, load_sound, SCREEN, Score, Counter, calculate_score_and_rank, draw_hp_bar
 
 
 # =============================
@@ -44,8 +44,8 @@ def collision_detection(majo, ufo, beam_g, bomb_g):
         )
         Beam.counter.val -= 1  # ビーム発射数を減らす
         Point(Ufo.MINUS_POINT, ufo.rect.center)  # 得点表示
-        Ufo.score.val -= Ufo.MINUS_POINT  # UFOスコア減少
-        Majo.score.val += Majo.UFO_POINT  # 魔女スコア加算
+        ufo.hp -= Ufo.MINUS_POINT  # UFOスコア減少
+        # Majo.score.val += Majo.UFO_POINT  # 魔女スコア加算
 
     # --- ビームと爆弾の衝突判定 ---
     group_collided = pygame.sprite.groupcollide(
@@ -65,7 +65,7 @@ def collision_detection(majo, ufo, beam_g, bomb_g):
                     Beam.exp_sound,
                 )
         Beam.counter.val -= 1  # ビーム発射数を減らす
-        Majo.score.val += Majo.BOMB_POINT  # 魔女スコア加算
+        # Majo.score.val += Majo.BOMB_POINT  # 魔女スコア加算
 
     # --- 魔女と爆弾の衝突判定 ---
     bomb_collided = pygame.sprite.spritecollide(
@@ -110,7 +110,7 @@ async def main():
     # 制限時間
     TIME_LIMIT = 60  # 制限時間（秒）
     time_left = TIME_LIMIT  # 残り時間
-    font = pygame.font.SysFont(None, 48)  # 残り時間表示用フォント
+    time_font = pygame.font.SysFont(None, 32)  # 残り時間表示用フォント
 
     # Spriteグループの登録
     group = pygame.sprite.RenderUpdates()  # 描画更新用グループ
@@ -143,25 +143,25 @@ async def main():
         CLEAR: load_image("gameclear.png"),  # クリア画像
     }
     opening_sound = load_sound("bgm_maoudamashii_healing08.ogg")  # タイトルBGM
-    opening_sound.set_volume(0.4)  # 音量調整
+    opening_sound.set_volume(0.3)  # 音量調整
     opening_sound.play(-1)  # ループ再生
     play_sound = load_sound("bgm_maoudamashii_fantasy15.ogg")  # プレイ中BGM
-    play_sound.set_volume(0.4)  # 音量調整
+    play_sound.set_volume(0.3)  # 音量調整
 
     # スコア・ライフなどの初期化
     Majo.life = Score(
         initval=3,  # 初期ライフ
         maxval=3,  # 最大ライフ
-        pos=(SCREEN.right - 120, 5),  # 表示位置
+        pos=(SCREEN.right - 165, 5),  # 表示位置
         color=Score.RED,  # 色
         font="ipaexg.ttf",  # フォント
-        form="残り: #",  # 表示フォーマット
+        form="Player HP: #",  # 表示フォーマット
         pat="●○",  # ライフ表示パターン
     )
-    Majo.score = Score(pos=(250, 5), form="SCORE: #")  # スコア表示
-    Majo.hi_score = HiScore(Majo.score, pos=(400, 5), form="(HI: #)")  # ハイスコア表示
-    Majo.stage = Score(initval=1, pos=(0, 5), form="ST: #")  # ステージ表示
-    Ufo.score = Score(initval=15, pos=(100, 5), form="UFO: #")  # UFOスコア
+    # Majo.score = Score(pos=(250, 5), form="SCORE: #")  # スコア表示
+    # Majo.hi_score = HiScore(Majo.score, pos=(400, 5), form="(HI: #)")  # ハイスコア表示
+    # Majo.stage = Score(initval=1, pos=(0, 5), form="ST: #")  # ステージ表示
+    # Ufo.score = Score(initval=15, pos=(0, 5), form="UFO: #")  # UFOスコア
     Beam.counter = Counter(initval=0, maxval=2)  # ビーム発射回数カウンタ
 
     # 魔女・背景のインスタンス生成
@@ -187,13 +187,17 @@ async def main():
         bg_img.draw(screen)  # 背景描画
         group.draw(screen)  # スプライト描画
 
+        # 敵のHPバー描画（UFOがいる場合のみ）
+        if ufo and game_status == PLAY:
+            draw_hp_bar(screen, ufo, pos=(SCREEN.centerx - 100, 8))
+
         # 制限時間の計算と表示
         if game_status == PLAY:
             elapsed_sec = (pygame.time.get_ticks() - start_ticks) // 1000  # 経過秒数
             time_left = max(0, TIME_LIMIT - elapsed_sec)  # 残り時間
-            # 残り時間を画面右上に表示
-            timer_img = font.render(f"TIME: {time_left}", True, (0, 0, 0))
-            screen.blit(timer_img, (SCREEN.right - 150, 60))
+            # 残り時間を画面左上に表示
+            timer_img = time_font.render(f"TIME: {time_left}", True, (0, 0, 0))
+            screen.blit(timer_img, (SCREEN.left + 10, 10))
 
             # 時間切れでゲームオーバー
             if time_left == 0:
@@ -204,7 +208,7 @@ async def main():
         # クリア時はスコアを表示
         if game_status == CLEAR:
             screen.blit(title_msg[game_status], (100, 150))  # メッセージ画像描画
-            score_img, rank_img = calculate_score_and_rank(time_left, Majo.life.val, font)
+            score_img, rank_img = calculate_score_and_rank(time_left, Majo.life.val, pygame.font.SysFont(None, 48))
             screen.blit(score_img, (SCREEN.centerx - 150, SCREEN.centery + 80))
             screen.blit(rank_img, (SCREEN.centerx - 100, SCREEN.centery + 120))
         # タイトル・ゲームオーバー時はメッセージ画像を表示
@@ -221,7 +225,7 @@ async def main():
             play_sound.stop()  # プレイBGM停止
             opening_sound.play(-1)  # タイトルBGM再生
         # UFOスコアが0になったらクリア
-        if game_status == PLAY and Ufo.score.val == 0:
+        if game_status == PLAY and ufo.hp == 0:
             game_status = CLEAR  # クリア状態へ
             play_sound.stop()  # プレイBGM停止
             opening_sound.play(-1)  # タイトルBGM再生
@@ -248,8 +252,8 @@ async def main():
                     game_status = PLAY  # プレイ状態へ
                     ufo.kill()  # 既存UFO削除
                     ufo = Ufo()  # 新UFO生成
-                    Ufo.score.reset()  # UFOスコアリセット
-                    Majo.stage.val += 1  # ステージ数加算
+                    # Ufo.score.reset()  # UFOスコアリセット
+                    # Majo.stage.val += 1  # ステージ数加算
                     opening_sound.stop()  # タイトルBGM停止
                     play_sound.play(-1)  # プレイBGM再生
                     start_ticks = pygame.time.get_ticks()  # タイマーリセット
@@ -260,13 +264,13 @@ async def main():
                     majo.kill()  # 既存魔女削除
                     ufo = Ufo()  # 新UFO生成
                     majo = Majo()  # 新魔女生成
-                    Ufo.score.reset()  # UFOスコアリセット
+                    # Ufo.score.reset()  # UFOスコアリセット
                     Majo.life.reset()  # ライフリセット
                     opening_sound.stop()  # タイトルBGM停止
                     play_sound.play(-1)  # プレイBGM再生
                     bg_img = Background(majo)  # 背景再生成
-                    Majo.score.reset()  # スコアリセット
-                    Majo.stage.reset()  # ステージリセット
+                    # Majo.score.reset()  # スコアリセット
+                    # Majo.stage.reset()  # ステージリセット
                     start_ticks = pygame.time.get_ticks()  # タイマーリセット
 
         # キー入力による魔女の移動処理
