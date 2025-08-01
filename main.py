@@ -14,7 +14,7 @@ import asyncio
 from sprites import Background, Majo, Ufo, Beam, Bomb, Explosion, Point
 
 # ユーティリティ関数・定数のインポート
-from utils import load_image, load_sound, SCREEN, Score, HiScore, Counter
+from utils import load_image, load_sound, SCREEN, Score, HiScore, Counter, calculate_score_and_rank
 
 
 # =============================
@@ -201,8 +201,14 @@ async def main():
                 play_sound.stop()
                 opening_sound.play(-1)
 
-        # タイトル・クリア・ゲームオーバー時はメッセージ画像を表示
-        if game_status != PLAY:
+        # クリア時はスコアを表示
+        if game_status == CLEAR:
+            screen.blit(title_msg[game_status], (100, 150))  # メッセージ画像描画
+            score_img, rank_img = calculate_score_and_rank(time_left, Majo.life.val, font)
+            screen.blit(score_img, (SCREEN.centerx - 150, SCREEN.centery + 80))
+            screen.blit(rank_img, (SCREEN.centerx - 100, SCREEN.centery + 120))
+        # タイトル・ゲームオーバー時はメッセージ画像を表示
+        elif game_status != PLAY:
             screen.blit(title_msg[game_status], (100, 150))  # メッセージ画像描画
 
         # 画面の内容を更新（ダブルバッファリング）

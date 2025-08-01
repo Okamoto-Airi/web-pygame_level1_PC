@@ -8,6 +8,32 @@ import os  # ファイルパス結合などに使用
 SCREEN = pygame.Rect((0, 0, 640, 480))  # 画面サイズを矩形で定義
 
 
+def calculate_score_and_rank(time_left, life_val, font):
+    """
+    残り時間とライフからスコアとランクを計算し、スコア画像・ランク画像を返す。
+    :param time_left: 残り秒数（int）
+    :param life_val: ライフの残り値（int）
+    :param font: Pygameフォントオブジェクト
+    :return: (スコア画像Surface, ランク画像Surface)
+    """
+    time_score = time_left * 10
+    life_score = life_val * 100
+    final_score = time_score + life_score
+
+    if final_score >= 500:
+        rank = "GOLD"
+    elif final_score >= 300:
+        rank = "SILVER"
+    elif final_score >= 100:
+        rank = "BRONZE"
+    else:
+        rank = "NONE"
+
+    score_img = font.render(f"FINAL SCORE: {final_score}", True, (0, 0, 0))
+    rank_img = font.render(f"RANK: {rank}", True, (255, 128, 0))
+
+    return score_img, rank_img
+
 
 def load_image(fname, size=None):
     """
