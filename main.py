@@ -2,7 +2,7 @@
 import pygame
 
 # Pygameの定数を明示的にインポート（イベントやキーコード用）
-from pygame.locals import QUIT, KEYDOWN, K_SPACE, K_c, K_r, K_LEFT, K_RIGHT
+from pygame.locals import QUIT, KEYDOWN, K_SPACE, K_q, K_r, K_LEFT, K_RIGHT
 
 # システム終了用
 import sys
@@ -207,12 +207,23 @@ async def main():
 
         # クリア時はスコアを表示
         if game_status == CLEAR:
-            screen.blit(title_msg[game_status], (100, 150))  # メッセージ画像描画
-            score_img, rank_img = calculate_score_and_rank(time_left, Majo.life.val, pygame.font.SysFont(None, 48))
-            screen.blit(score_img, (SCREEN.centerx - 150, SCREEN.centery + 80))
-            screen.blit(rank_img, (SCREEN.centerx - 100, SCREEN.centery + 120))
-        # タイトル・ゲームオーバー時はメッセージ画像を表示
-        elif game_status != PLAY:
+            font = pygame.font.Font("font/Bungee-Regular.ttf", 60)  # フォント設定
+            game_msg = font.render("GAME CLEAR!", True, (255, 0, 0))
+            screen.blit(game_msg, (SCREEN.centerx - 200, SCREEN.centery - 100))
+            # screen.blit(title_msg[game_status], (100, 150))  # メッセージ画像描画
+            calculate_score_and_rank(screen, game_status, time_left, Majo.life.val, pygame.font.SysFont(None, 48))
+            # screen.blit(score_img, (SCREEN.centerx - 150, SCREEN.centery + 80))
+            # screen.blit(rank_img, (SCREEN.centerx - 100, SCREEN.centery + 120))
+        elif game_status == GAMEOVER:
+            font = pygame.font.Font("font/Bungee-Regular.ttf", 60)  # フォント設定
+            game_msg = font.render("GAME OVER", True, (0, 0, 255))
+            screen.blit(game_msg, (SCREEN.centerx - 180, SCREEN.centery - 100))
+            # ゲームオーバー時はスコアを表示
+            calculate_score_and_rank(screen, game_status, time_left, Majo.life.val, pygame.font.SysFont(None, 48))
+            # screen.blit(score_img, (SCREEN.centerx - 150, SCREEN.centery + 80))
+            # screen.blit(rank_img, (SCREEN.centerx - 100, SCREEN.centery + 120))
+        # タイトル時はメッセージ画像を表示
+        elif game_status == INIT:
             screen.blit(title_msg[game_status], (100, 150))  # メッセージ画像描画
 
         # 画面の内容を更新（ダブルバッファリング）
@@ -233,6 +244,7 @@ async def main():
         # イベント処理（キー入力・ウィンドウ操作など）
         for event in pygame.event.get():
             if event.type == QUIT:
+                pygame.mixer.music.stop()
                 pygame.quit()  # Pygame終了
                 sys.exit()  # プログラム終了
             elif event.type == KEYDOWN:
@@ -247,18 +259,18 @@ async def main():
                     opening_sound.stop()  # タイトルBGM停止
                     play_sound.play(-1)  # プレイBGM再生
                     start_ticks = pygame.time.get_ticks()  # タイマーリセット
-                # クリア画面でCキーで次ステージ
-                elif event.key == K_c and game_status == CLEAR:
-                    game_status = PLAY  # プレイ状態へ
-                    ufo.kill()  # 既存UFO削除
-                    ufo = Ufo()  # 新UFO生成
-                    # Ufo.score.reset()  # UFOスコアリセット
-                    # Majo.stage.val += 1  # ステージ数加算
-                    opening_sound.stop()  # タイトルBGM停止
-                    play_sound.play(-1)  # プレイBGM再生
-                    start_ticks = pygame.time.get_ticks()  # タイマーリセット
-                # ゲームオーバー画面でRキーでリトライ
-                elif event.key == K_r and game_status == GAMEOVER:
+                # # クリア画面でCキーで次ステージ
+                # elif event.key == K_c and game_status == CLEAR:
+                #     game_status = PLAY  # プレイ状態へ
+                #     ufo.kill()  # 既存UFO削除
+                #     ufo = Ufo()  # 新UFO生成
+                #     # Ufo.score.reset()  # UFOスコアリセット
+                #     # Majo.stage.val += 1  # ステージ数加算
+                #     opening_sound.stop()  # タイトルBGM停止
+                #     play_sound.play(-1)  # プレイBGM再生
+                #     start_ticks = pygame.time.get_ticks()  # タイマーリセット
+                # ゲームクリア・ゲームオーバー画面でRキーでリトライ
+                elif event.key == K_r and game_status in (GAMEOVER, CLEAR):
                     game_status = PLAY  # プレイ状態へ
                     ufo.kill()  # 既存UFO削除
                     majo.kill()  # 既存魔女削除
@@ -272,6 +284,11 @@ async def main():
                     # Majo.score.reset()  # スコアリセット
                     # Majo.stage.reset()  # ステージリセット
                     start_ticks = pygame.time.get_ticks()  # タイマーリセット
+                # ゲームオーバー・クリア画面でQキーでゲーム終了
+                elif event.key == K_q and game_status in (GAMEOVER, CLEAR):
+                    pygame.mixer.music.stop()
+                    pygame.quit()  # Pygame終了
+                    sys.exit()  # プログラム終了
 
         # キー入力による魔女の移動処理
         pressed_keys = pygame.key.get_pressed()  # 押されているキー取得

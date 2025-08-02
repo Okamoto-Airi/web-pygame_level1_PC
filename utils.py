@@ -4,6 +4,7 @@ import pygame  # ゲーム用ライブラリ
 # OSパス操作用
 import os  # ファイルパス結合などに使用
 
+
 # ゲーム画面のサイズ（左上x, 左上y, 幅, 高さ）
 SCREEN = pygame.Rect((0, 0, 640, 480))  # 画面サイズを矩形で定義
 
@@ -49,14 +50,26 @@ def draw_hp_bar(screen, ufo, pos=(100, 50), size=(200, 20), font=None):
     screen.blit(hp_text, text_rect)
 
 
-def calculate_score_and_rank(time_left, life_val, font):
+def calculate_score_and_rank(screen, game_status, time_left, life_val, font):
     """
     残り時間とライフからスコアとランクを計算し、スコア画像・ランク画像を返す。
+    screen: 描画先のPygame画面
+    game_status: ゲームの状態（例：CLEAR, GAME_OVERなど）
     :param time_left: 残り秒数（int）
     :param life_val: ライフの残り値（int）
     :param font: Pygameフォントオブジェクト
     :return: (スコア画像Surface, ランク画像Surface)
     """
+    # # ゲームクリア・ゲームオーバーの表示
+    # if game_status == CLEAR:
+    #     game_msg = font.render("GAME CLEAR!", True, (0, 0, 0))
+    # elif game_status == GAMEOVER:
+    #     game_msg = font.render("GAME OVER", True, (0, 0, 0))
+    # else:
+    #     game_msg = font.render("UNKNOWN STATUS", True, (255, 0, 0))  # 予期しない状態のとき
+    # screen.blit(game_msg, (SCREEN.centerx - 100, SCREEN.centery - 50))
+
+    # スコア計算
     time_score = time_left * 10
     life_score = life_val * 100
     final_score = time_score + life_score
@@ -70,10 +83,23 @@ def calculate_score_and_rank(time_left, life_val, font):
     else:
         rank = "NONE"
 
-    score_img = font.render(f"FINAL SCORE: {final_score}", True, (0, 0, 0))
-    rank_img = font.render(f"RANK: {rank}", True, (255, 128, 0))
+    score_img = font.render(f"FINAL SCORE: {final_score}", True, (245, 127, 23))
+    rank_img = font.render(f"RANK: {rank}", True, (245, 127, 23))
+    screen.blit(score_img, (SCREEN.centerx - 150, SCREEN.centery - 10))
+    screen.blit(rank_img, (SCREEN.centerx - 100, SCREEN.centery + 20))
 
-    return score_img, rank_img
+    text1 = font.render("Restart (R) / Exit Game (Q)", True, (0, 0, 0))
+    # text2 = font.render("Press Q to Quit", True, (0, 0, 0))
+    screen.blit(text1, (SCREEN.centerx - 200, SCREEN.centery + 100))
+    # screen.blit(text2, (SCREEN.centerx - 80, SCREEN.centery + 200))
+    # return score_img, rank_img
+
+
+def draw_restart_or_quit(screen, font):
+    text1 = font.render("R Key: リスタート", True, (0, 0, 0))
+    text2 = font.render("Q Key: ゲーム終了", True, (0, 0, 0))
+    screen.blit(text1, (SCREEN.centerx - 80, SCREEN.centery + 160))
+    screen.blit(text2, (SCREEN.centerx - 80, SCREEN.centery + 200))
 
 
 def load_image(fname, size=None):
