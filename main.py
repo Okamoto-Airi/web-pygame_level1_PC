@@ -143,10 +143,10 @@ async def main():
         CLEAR: load_image("gameclear.png"),  # クリア画像
     }
     opening_sound = load_sound("bgm_maoudamashii_healing08.ogg")  # タイトルBGM
-    opening_sound.set_volume(0.3)  # 音量調整
+    opening_sound.set_volume(0.1)  # 音量調整
     opening_sound.play(-1)  # ループ再生
     play_sound = load_sound("bgm_maoudamashii_fantasy15.ogg")  # プレイ中BGM
-    play_sound.set_volume(0.3)  # 音量調整
+    play_sound.set_volume(0.1)  # 音量調整
 
     # スコア・ライフなどの初期化
     Majo.life = Score(
