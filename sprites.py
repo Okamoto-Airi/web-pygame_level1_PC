@@ -166,7 +166,7 @@ class Ufo(pygame.sprite.Sprite):
     """
 
     IMAGE_WIDTH, IMAGE_HEIGHT = 64, 28
-    START = (SCREEN.width / 4, 30)
+    START = (SCREEN.width / 4, 35)
     SPEED = 5
     LEFT, RIGHT = 0, 1
     BOMB_PROB = 0.01
