@@ -254,9 +254,9 @@ async def main():
                 pygame.quit()  # Pygame終了
                 # sys.exit()  # プログラム終了
                 # タブを閉じる
-                js.eval("window.close()")
+                # js.eval("window.close()")
                 # または前のページに戻る
-                # js.eval("window.history.back()")
+                js.eval("window.history.back()")
             elif event.type == KEYDOWN:
                 # プレイ中にスペースキーでビーム発射
                 if event.key == K_SPACE and game_status == PLAY:
@@ -300,9 +300,9 @@ async def main():
                     pygame.quit()  # Pygame終了
                     # sys.exit()  # プログラム終了
                     # タブを閉じる
-                    js.eval("window.close()")
+                    # js.eval("window.close()")
                     # または前のページに戻る
-                    # js.eval("window.history.back()")
+                    js.eval("window.history.back()")
 
         # キー入力による魔女の移動処理
         pressed_keys = pygame.key.get_pressed()  # 押されているキー取得
