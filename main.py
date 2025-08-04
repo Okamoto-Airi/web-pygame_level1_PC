@@ -126,15 +126,19 @@ async def main():
 
     # 各種画像・サウンドの読み込みと設定
     Beam.sound = load_sound("se_maoudamashii_se_ignition01.ogg")  # ビーム発射音
+    Beam.sound.set_volume(0.03)  # ビーム発射音の音量調整（0.0～1.0）
     Beam.image = load_image("majo_beam.png")  # ビーム画像
     Ufo.images = load_image("all_ufo3.png", (128, 28))  # UFO画像
     Ufo.exp_images = load_image("ufo_fire.png", (320, 960))  # UFO爆発画像
     Ufo.exp_sound = load_sound("se_maoudamashii_explosion08.ogg")  # UFO爆発音
+    Ufo.exp_sound.set_volume(0.03)  # 音量調整（0.0～1.0）
     Bomb.images = load_image("ufo_bomb.png")  # 爆弾画像
     Bomb.exp_images = load_image("bomb_fire.png")  # 爆弾爆発画像
     Bomb.exp_sound = load_sound("se_maoudamashii_explosion05.ogg")  # 爆弾爆発音
+    Bomb.exp_sound.set_volume(0.03)  # 爆弾爆発音の音量調整（0.0～1.0）
     Beam.exp_images = load_image("beam_fire.png")  # ビーム爆発画像
     Beam.exp_sound = load_sound("se_maoudamashii_explosion04.ogg")  # ビーム爆発音
+    Beam.exp_sound.set_volume(0.03)  # ビーム爆発音の音量調整（0.0～1.0）
 
     # タイトル・ゲームオーバー・クリア画面用画像の辞書
     title_msg = {
