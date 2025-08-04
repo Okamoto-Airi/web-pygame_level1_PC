@@ -10,6 +10,8 @@ import sys
 # 非同期処理用
 import asyncio
 
+import js  # pygbag環境でのみ有効
+
 # スプライト関連クラスのインポート
 from sprites import Background, Majo, Ufo, Beam, Bomb, Explosion, Point
 
@@ -250,7 +252,11 @@ async def main():
             if event.type == QUIT:
                 pygame.mixer.music.stop()
                 pygame.quit()  # Pygame終了
-                sys.exit()  # プログラム終了
+                # sys.exit()  # プログラム終了
+                # タブを閉じる
+                js.eval("window.close()")
+                # または前のページに戻る
+                # js.eval("window.history.back()")
             elif event.type == KEYDOWN:
                 # プレイ中にスペースキーでビーム発射
                 if event.key == K_SPACE and game_status == PLAY:
@@ -292,7 +298,11 @@ async def main():
                 elif event.key == K_q and game_status in (GAMEOVER, CLEAR):
                     pygame.mixer.music.stop()
                     pygame.quit()  # Pygame終了
-                    sys.exit()  # プログラム終了
+                    # sys.exit()  # プログラム終了
+                    # タブを閉じる
+                    js.eval("window.close()")
+                    # または前のページに戻る
+                    # js.eval("window.history.back()")
 
         # キー入力による魔女の移動処理
         pressed_keys = pygame.key.get_pressed()  # 押されているキー取得
