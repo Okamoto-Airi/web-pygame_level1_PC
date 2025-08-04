@@ -251,6 +251,8 @@ async def main():
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.mixer.music.stop()
+                opening_sound.stop()
+                play_sound.stop()
                 pygame.quit()  # Pygame終了
                 # sys.exit()  # プログラム終了
                 # タブを閉じる
@@ -298,6 +300,8 @@ async def main():
                 # ゲームオーバー・クリア画面でQキーでゲーム終了
                 elif event.key == K_q and game_status in (GAMEOVER, CLEAR):
                     pygame.mixer.music.stop()
+                    opening_sound.stop()
+                    play_sound.stop()
                     pygame.quit()  # Pygame終了
                     # sys.exit()  # プログラム終了
                     # タブを閉じる
