@@ -89,6 +89,23 @@ def collision_detection(majo, ufo, beam_g, bomb_g):
             majo.kill()  # ライフ0で魔女消滅
 
 
+def stop_all_sounds(opening_sound, play_sound):
+    """全てのSoundインスタンスを停止する関数
+
+    Args:
+        opening_sound (_type_): オープニングBGM
+        play_sound (_type_): プレイ中BGM
+    """
+    pygame.mixer.music.stop()
+    opening_sound.stop()
+    play_sound.stop()
+    Beam.sound.stop()
+    Beam.exp_sound.stop()
+    Ufo.exp_sound.stop()
+    Bomb.exp_sound.stop()
+    pygame.mixer.stop()
+
+
 # =============================
 # メイン関数（ゲームのエントリーポイント）
 # =============================
@@ -250,16 +267,16 @@ async def main():
         # イベント処理（キー入力・ウィンドウ操作など）
         for event in pygame.event.get():
             if event.type == QUIT:
-                pygame.mixer.music.stop()
-                opening_sound.stop()
-                play_sound.stop()
+                stop_all_sounds(opening_sound, play_sound)
+                # pygame.mixer.music.stop()
+                # opening_sound.stop()
+                # play_sound.stop()
                 pygame.quit()  # Pygame終了
+                await asyncio.sleep(0.1)  # 0.1秒待つ（音停止の反映待ち）
                 # sys.exit()  # プログラム終了
-                # タブを閉じる
-                js.eval("window.onbeforeunload = null")
-                js.eval("window.close()")
-                # または前のページに戻る
-                # js.eval("window.history.back()")
+                # js.eval("window.close()")
+
+
             elif event.type == KEYDOWN:
                 # プレイ中にスペースキーでビーム発射
                 if event.key == K_SPACE and game_status == PLAY:
@@ -299,16 +316,18 @@ async def main():
                     start_ticks = pygame.time.get_ticks()  # タイマーリセット
                 # ゲームオーバー・クリア画面でQキーでゲーム終了
                 elif event.key == K_q and game_status in (GAMEOVER, CLEAR):
-                    pygame.mixer.music.stop()
-                    opening_sound.stop()
-                    play_sound.stop()
+                    # pygame.mixer.music.stop()
+                    # opening_sound.stop()
+                    # play_sound.stop()
+                    stop_all_sounds(opening_sound, play_sound)
                     pygame.quit()  # Pygame終了
+                    await asyncio.sleep(0.1)  # 0.1秒待つ（音停止の反映待ち）
                     # sys.exit()  # プログラム終了
                     # タブを閉じる
-                    js.eval("window.onbeforeunload = null")
+                    # js.eval("window.onbeforeunload = null")
                     js.eval("window.close()")
                     # または前のページに戻る
-                    # js.eval("window.history.back()")
+                    js.eval("window.history.back()")
 
         # キー入力による魔女の移動処理
         pressed_keys = pygame.key.get_pressed()  # 押されているキー取得
