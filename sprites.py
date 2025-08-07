@@ -403,3 +403,35 @@ class Point(pygame.sprite.Sprite):
         if self.anime_count == Point.MAX_ANIME_COUNT:
             self.kill()  # スプライトを消滅させる
             return
+
+
+class HPBarSprite(pygame.sprite.Sprite):
+    def __init__(self, ufo, pos=(SCREEN.centerx - 100, 8), size=(200, 20)):
+        super().__init__(self.containers)
+        self.ufo = ufo
+        self.pos = pos
+        self.size = size
+        self.font = pygame.font.SysFont(None, 20)
+        self.image = pygame.Surface(size, pygame.SRCALPHA)
+        self.rect = self.image.get_rect(topleft=pos)
+        self.update()
+
+    def update(self):
+        x, y = 0, 0
+        w, h = self.size
+        self.image.fill((0, 0, 0, 0))
+        pygame.draw.rect(self.image, (180, 180, 180), (x, y, w, h))
+        hp_ratio = max(0, self.ufo.hp / self.ufo.MAX_HP)
+        if hp_ratio > 0.5:
+            bar_color = (0, 255, 0)
+        elif hp_ratio > 0.2:
+            bar_color = (240, 240, 0)
+        else:
+            bar_color = (255, 0, 0)
+        pygame.draw.rect(self.image, bar_color, (x, y, int(w * hp_ratio), h))
+        pygame.draw.rect(self.image, (0, 0, 0), (x, y, w, h), 2)
+        hp_text = self.font.render(
+            f"UFO HP: {self.ufo.hp}/{self.ufo.MAX_HP}", True, (0, 0, 0)
+        )
+        text_rect = hp_text.get_rect(center=(w // 2, h // 2))
+        self.image.blit(hp_text, text_rect)
