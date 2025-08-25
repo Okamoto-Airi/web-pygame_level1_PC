@@ -55,7 +55,6 @@ def collision_detection(majo, ufo, beam_g, bomb_g):
         Beam.counter.val -= 1  # ビーム発射数を減らす
         Point(Ufo.MINUS_POINT, ufo.rect.center)  # 得点表示
         ufo.hp -= Ufo.MINUS_POINT  # UFOスコア減少
-        # Majo.score.val += Majo.UFO_POINT  # 魔女スコア加算
 
     # --- ビームと爆弾の衝突判定 ---
     group_collided = pygame.sprite.groupcollide(
@@ -75,7 +74,6 @@ def collision_detection(majo, ufo, beam_g, bomb_g):
                     Beam.exp_sound,
                 )
         Beam.counter.val -= 1  # ビーム発射数を減らす
-        # Majo.score.val += Majo.BOMB_POINT  # 魔女スコア加算
 
     # --- 魔女と爆弾の衝突判定 ---
     bomb_collided = pygame.sprite.spritecollide(
@@ -150,8 +148,6 @@ async def main():
 
     # 制限時間
     TIME_LIMIT = 60  # 制限時間（秒）
-    # time_left = TIME_LIMIT  # 残り時間
-    # time_font = pygame.font.SysFont(None, 32)  # 残り時間表示用フォント
     timer_sprite = TimerSprite(TIME_LIMIT, pos=(SCREEN.left + 10, 10))
 
     # 各種画像・サウンドの読み込みと設定
@@ -170,12 +166,6 @@ async def main():
     Beam.exp_sound = load_sound("se_maoudamashii_explosion04.ogg")  # ビーム爆発音
     Beam.exp_sound.set_volume(0.03)  # ビーム爆発音の音量調整（0.0～1.0）
 
-    # # タイトル・ゲームオーバー・クリア画面用画像の辞書
-    # title_msg = {
-    #     INIT: load_image("opening-logo.png"),  # タイトル画像
-    #     GAMEOVER: load_image("gameover.png"),  # ゲームオーバー画像
-    #     CLEAR: load_image("gameclear.png"),  # クリア画像
-    # }
     title_msg = load_image("opening-logo.png")  # タイトル画像
     opening_sound = load_sound("bgm_maoudamashii_healing08.ogg")  # タイトルBGM
     opening_sound.set_volume(0.03)  # 音量調整
@@ -183,9 +173,7 @@ async def main():
     play_sound = load_sound("bgm_maoudamashii_fantasy15.ogg")  # プレイ中BGM
     play_sound.set_volume(0.03)  # 音量調整
     gameclear_sound = load_sound("clear.ogg")
-    # gameclear_sound.set_volume(0.03)  # クリア音の音量調整
     gameover_sound = load_sound("gameover.ogg")
-    # gameover_sound.set_volume(0.15)  # ゲームオーバー
 
     # スコア・ライフなどの初期化
     Majo.life = Score(
@@ -197,10 +185,7 @@ async def main():
         form="Player HP: #",  # 表示フォーマット
         pat="●○",  # ライフ表示パターン
     )
-    # Majo.score = Score(pos=(250, 5), form="SCORE: #")  # スコア表示
-    # Majo.hi_score = HiScore(Majo.score, pos=(400, 5), form="(HI: #)")  # ハイスコア表示
-    # Majo.stage = Score(initval=1, pos=(0, 5), form="ST: #")  # ステージ表示
-    # Ufo.score = Score(initval=15, pos=(0, 5), form="UFO: #")  # UFOスコア
+
     Beam.counter = Counter(initval=0, maxval=2)  # ビーム発射回数カウンタ
 
     # 魔女・背景のインスタンス生成
@@ -226,25 +211,11 @@ async def main():
         bg_img.draw(screen)  # 背景描画
         group.draw(screen)  # スプライト描画
 
-        # # 敵のHPバー描画（UFOがいる場合のみ）
-        # if ufo and game_status == PLAY:
-        #     draw_hp_bar(screen, ufo, pos=(SCREEN.centerx - 100, 8))
-
         # 制限時間の計算と表示
         if game_status == PLAY:
             elapsed_sec = (pygame.time.get_ticks() - start_ticks) // 1000  # 経過秒数
             time_left = max(0, TIME_LIMIT - elapsed_sec)  # 残り時間
-            # 残り時間を画面左上に表示
-            # timer_img = time_font.render(f"TIME: {time_left}", True, (0, 0, 0))
-            # screen.blit(timer_img, (SCREEN.left + 10, 10))
             timer_sprite.val = time_left  # 残り秒数を更新
-
-            # # 時間切れでゲームオーバー
-            # if time_left == 0:
-            #     game_status = GAMEOVER
-            #     play_sound.stop()
-            #     # opening_sound.play(-1)
-            #     gameover_sound.play()  # ゲームオーバー音再生
 
         # クリア時はスコアを表示
         if game_status == CLEAR:
@@ -261,10 +232,6 @@ async def main():
             font = pygame.font.Font("font/Bungee-Regular.ttf", 60)  # フォント設定
             game_msg = font.render("GAME OVER", True, (0, 0, 255))
             screen.blit(game_msg, (SCREEN.centerx - 180, SCREEN.centery - 100))
-            # # ゲームオーバー時はスコアを表示
-            # calculate_score_and_rank(
-            #     screen, time_left, Majo.life.val, pygame.font.SysFont(None, 48)
-            # )
             rq_font = pygame.font.SysFont(None, 48)
             text1 = rq_font.render("Restart (R) / Exit Game (Q)", True, (0, 0, 0))
             screen.blit(text1, (SCREEN.centerx - 200, SCREEN.centery))
@@ -281,22 +248,17 @@ async def main():
         if game_status == PLAY and (Majo.life.val == 0 or time_left == 0):
             game_status = GAMEOVER  # ゲームオーバー状態へ
             play_sound.stop()  # プレイBGM停止
-            # opening_sound.play(-1)  # タイトルBGM再生
             gameover_sound.play()  # ゲームオーバー音再生
         # UFOスコアが0になったらクリア
         if game_status == PLAY and ufo.hp == 0:
             game_status = CLEAR  # クリア状態へ
             play_sound.stop()  # プレイBGM停止
-            # opening_sound.play(-1)  # タイトルBGM再生
             gameclear_sound.play()  # クリア音再生
 
         # イベント処理（キー入力・ウィンドウ操作など）
         for event in pygame.event.get():
             if event.type == QUIT:
                 stop_all_sounds(opening_sound, play_sound)
-                # pygame.mixer.music.stop()
-                # opening_sound.stop()
-                # play_sound.stop()
                 pygame.quit()  # Pygame終了
                 await asyncio.sleep(0.1)  # 0.1秒待つ（音停止の反映待ち）
                 # sys.exit()  # プログラム終了
@@ -317,16 +279,6 @@ async def main():
                     opening_sound.stop()  # タイトルBGM停止
                     play_sound.play(-1)  # プレイBGM再生
                     start_ticks = pygame.time.get_ticks()  # タイマーリセット
-                # # クリア画面でCキーで次ステージ
-                # elif event.key == K_c and game_status == CLEAR:
-                #     game_status = PLAY  # プレイ状態へ
-                #     ufo.kill()  # 既存UFO削除
-                #     ufo = Ufo()  # 新UFO生成
-                #     # Ufo.score.reset()  # UFOスコアリセット
-                #     # Majo.stage.val += 1  # ステージ数加算
-                #     opening_sound.stop()  # タイトルBGM停止
-                #     play_sound.play(-1)  # プレイBGM再生
-                #     start_ticks = pygame.time.get_ticks()  # タイマーリセット
                 # ゲームクリア・ゲームオーバー画面でRキーでリトライ
                 elif event.key == K_r and game_status in (GAMEOVER, CLEAR):
                     game_status = PLAY  # プレイ状態へ
@@ -337,21 +289,14 @@ async def main():
                     hp_bar_sprite = HPBarSprite(ufo)
                     hp_bar_sprite.update()  # HPバー更新
                     majo = Majo()  # 新魔女生成
-                    # Ufo.score.reset()  # UFOスコアリセット
                     Majo.life.reset()  # ライフリセット
-                    # opening_sound.stop()  # タイトルBGM停止
                     gameclear_sound.stop()  # クリア音停止
                     gameover_sound.stop()  # ゲームオーバー音停止
                     play_sound.play(-1)  # プレイBGM再生
                     bg_img = Background(majo)  # 背景再生成
-                    # Majo.score.reset()  # スコアリセット
-                    # Majo.stage.reset()  # ステージリセット
                     start_ticks = pygame.time.get_ticks()  # タイマーリセット
                 # ゲームオーバー・クリア画面でQキーでゲーム終了
                 elif event.key == K_q and game_status in (GAMEOVER, CLEAR):
-                    # pygame.mixer.music.stop()
-                    # opening_sound.stop()
-                    # play_sound.stop()
                     stop_all_sounds(opening_sound, play_sound)
                     pygame.quit()  # Pygame終了
                     await asyncio.sleep(0.1)  # 0.1秒待つ（音停止の反映待ち）
