@@ -55,6 +55,10 @@ pip install pygame pygbag
 python -m pygbag .
 ```
 
+## サンプル動画
+
+![サンプルGIF](picture/level1_sample.gif)
+
 ## ライセンス
 
 本プロジェクトのコードはMITライセンスで公開しています。
